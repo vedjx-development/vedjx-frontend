@@ -1,6 +1,7 @@
 <script>
     import { PUBLIC_API_HOST } from '$env/static/public'
     import { goto } from '$app/navigation';
+    import { browser } from "$app/environment"
 
     let success = false
     let usernameOrEmail = ""
@@ -9,6 +10,15 @@
     const delay = (seconds) => {
         seconds = seconds * 1000
         return new Promise(resolve => setTimeout(resolve, seconds))
+    }
+    function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + value + expires + "; path=/";
     }
 
     const apiLogin = async () => {
@@ -24,6 +34,7 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"
                 },
                 body: JSON.stringify(loginBody)
             })
@@ -32,6 +43,7 @@
             const user = jsonResponse?.user
 
             if (user) {
+                if (browser) setCookie("accessToken", jsonResponse?.accessToken, 1)
                 success = true
                 await delay(1.5)
                 goto("/")
